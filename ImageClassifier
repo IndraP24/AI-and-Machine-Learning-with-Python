@@ -1,0 +1,23 @@
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+x = pd.read_csv("C:/Users/indra/Downloads/MNIST_data.csv")
+y = pd.read_csv("C:/Users/indra/Downloads/MNIST_target.csv")
+
+x.head(10)
+y.head(10)
+
+train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.2, random_state = 4)
+
+rf = RandomForestClassifier(n_estimators = 100)
+
+rf.fit(train_x, train_y)
+
+train_predict = rf.predict(train_x)
+test_predict = rf.predict(test_x)
+
+print("Training Score: ", accuracy_score(train_predict, train_y))
+print("Test Score: ", accuracy_score(test_predict, test_y))
