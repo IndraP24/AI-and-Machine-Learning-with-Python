@@ -1,0 +1,92 @@
+import sys
+print('Python: {}'.format(sys.version))
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+data = pd.read_csv('IRIS.csv')
+data.head(10)
+
+data.isnull().sum()
+
+data['species'].value_counts()
+
+data.describe()
+
+data.groupby('species').size()
+
+
+
+# Univariate Analysis
+
+print(data['petal_length'].plot.box())
+
+print(data['petal_width'].plot.box())
+
+print(data['sepal_length'].plot.box())
+
+print(data['sepal_width'].plot.box())
+
+data.hist(figsize = (10, 8))
+
+data.plot.box(subplots = True, layout = (2, 2), figsize = (10,8))
+
+
+
+# Multivariate Analysis
+
+from pandas.plotting import scatter_matrix
+scatter_matrix(data, figsize = (10, 8))
+
+x = data.drop(['species'], axis = 1)
+y = data['species']
+
+from sklearn.model_selection import train_test_split
+train_x, test_x, train_y, test_y = train_test_split(x, y, test_size = 0.2, random_state = 1)
+
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import accuracy_score
+
+from sklearn.linear_model import LogisticRegression as LGR
+from sklearn.neighbors import KNeighborsClassifier as KNN
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.naive_bayes import GaussianNB as GNB
+from sklearn.svm import SVC
+
+models = []
+models.append(('LGR', LGR(solver = 'liblinear', multi_class= 'ovr')))
+models.append(('LDA', LDA()))
+models.append(('KNN', KNN()))
+models.append(('GNB', GNB()))
+models.append(('SVM', SVC(gamma = 'auto')))
+
+from sklearn.model_selection import cross_val_score
+
+results = []
+names = []
+for name, model in models:
+  kfold = StratifiedKFold(n_splits= 10, random_state=1)
+  cv_results = cross_val_score(model, train_x, train_y, cv = kfold, scoring = 'accuracy')
+  results.append(cv_results)
+  names.append(name)
+  print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+
+plt.boxplot(results, labels = names)
+plt.title('Algorithm Comparison')
+plt.show()
+
+model = SVC(gamma = 'auto')
+model.fit(train_x, train_y)
+test_predict = model.predict(test_x)
+
+from sklearn.metrics import confusion_matrix
+
+accuracy_score(test_predict, test_y)
+
+confusion_matrix(test_predict, test_y)
+
+from sklearn.metrics import classification_report
+
+print(classification_report(test_predict, test_y))
